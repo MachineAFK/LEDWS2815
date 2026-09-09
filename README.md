@@ -1,0 +1,78 @@
+# WLED - Interfaz de control para ESP32-C3
+
+Firmware para una pantalla TFT con LVGL y un encoder rotatorio. El proyecto
+esta preparado para ESP-IDF y actualmente proporciona:
+
+- Pantalla de arranque con barra de progreso.
+- Menu principal navegable con encoder.
+- Boton de confirmacion del encoder.
+- Boton `KO` para volver al menu principal.
+- Control de pantalla ST7789 mediante `esp_lcd` y SPI.
+
+## Hardware
+
+El firmware esta configurado para un ESP32-C3 con la siguiente asignacion:
+
+| Funcion | GPIO |
+| --- | ---: |
+| TFT SCL | 4 |
+| TFT SDA/MOSI | 6 |
+| TFT reset | 8 |
+| TFT DC | 9 |
+| TFT CS | 7 |
+| Retroiluminacion TFT | 10 |
+| Encoder A | 2 |
+| Encoder B | 3 |
+| Encoder push | 5 |
+| Boton KO | 1 |
+
+La pantalla debe ser compatible con el controlador ST7789 y tener una
+resolucion de 240 x 320. Revisa el cableado y los niveles logicos antes de
+alimentar el montaje.
+
+## Requisitos
+
+- ESP-IDF 6.1 o compatible.
+- Python y las herramientas instaladas por ESP-IDF.
+- Placa ESP32-C3.
+- Pantalla TFT SPI y encoder rotatorio.
+
+## Compilar y cargar
+
+Desde la raiz del proyecto, con el entorno de ESP-IDF activado:
+
+```powershell
+idf.py set-target esp32c3
+idf.py build
+idf.py -p COM3 flash monitor
+```
+
+Sustituye `COM3` por el puerto serie de la placa. Para salir del monitor usa
+`Ctrl-]`.
+
+## Estructura
+
+```text
+.
+|-- main/
+|   |-- WLED.c              # Inicializacion, hardware e interfaz LVGL
+|   |-- CMakeLists.txt      # Registro del componente principal
+|   `-- idf_component.yml   # Dependencia de LVGL
+|-- CMakeLists.txt          # Configuracion raiz de ESP-IDF
+`-- dependencies.lock       # Versiones resueltas de dependencias
+```
+
+Los artefactos de compilacion se generan en `build/` y no forman parte del
+codigo fuente versionado.
+
+## Notas de arquitectura
+
+LVGL no es seguro para acceso concurrente. El firmware usa un mutex para
+proteger las operaciones realizadas por el bucle principal, el temporizador
+de la pantalla de inicio y la tarea del boton `KO`.
+
+## Estado del proyecto
+
+El menu ya esta operativo como base de la interfaz. Las opciones del menu
+registran la seleccion y quedan preparadas para conectar la logica de
+iluminacion WS2815, rele, brillo e informacion del hardware.
