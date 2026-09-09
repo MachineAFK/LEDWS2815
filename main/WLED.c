@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <inttypes.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
@@ -12,6 +13,7 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_timer.h"
 #include "esp_log.h"
+#include "led_strip.h"
 #include "lvgl.h"
 
 // ============================================================================
@@ -28,9 +30,11 @@
 #define PIN_ENC_B GPIO_NUM_3
 #define PIN_PUSH GPIO_NUM_5
 #define PIN_KO GPIO_NUM_1
+#define PIN_WS2815_DATA GPIO_NUM_11
 
 #define LCD_H_RES 240
 #define LCD_V_RES 320
+#define WS2815_LED_COUNT 240
 #define LVGL_TICK_PERIOD_MS 2
 #define LVGL_INPUT_PERIOD_MS 5
 #define LVGL_HANDLER_PERIOD_MS 10
@@ -45,12 +49,37 @@ static uint8_t last_encoder_state = 0;
 static lv_indev_t *indev_encoder = NULL;
 static lv_group_t *g_main_group = NULL;
 static SemaphoreHandle_t lvgl_mutex = NULL;
+static led_strip_handle_t ws2815_strip = NULL;
 
 static lv_obj_t *starting_screen = NULL;
 static lv_obj_t *main_menu_screen = NULL;
 
 // Declaraciones previas
 static void create_main_menu(void);
+
+static void ws2815_set_color(uint8_t red, uint8_t green, uint8_t blue)
+{
+    for (uint32_t index = 0; index < WS2815_LED_COUNT; index++)
+    {
+        ESP_ERROR_CHECK(led_strip_set_pixel(ws2815_strip, index, red, green, blue));
+    }
+    ESP_ERROR_CHECK(led_strip_refresh(ws2815_strip));
+}
+
+static void init_ws2815(void)
+{
+    led_strip_config_t strip_config = {
+        .strip_gpio_num = PIN_WS2815_DATA,
+        .max_leds = WS2815_LED_COUNT,
+    };
+    led_strip_rmt_config_t rmt_config = {
+        .resolution_hz = 10 * 1000 * 1000,
+        .flags.with_dma = false,
+    };
+
+    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &ws2815_strip));
+    ESP_ERROR_CHECK(led_strip_clear(ws2815_strip));
+}
 
 // ============================================================================
 // 1. MANEJADOR DE TIEMPO DE LVGL (Tick Interface)
@@ -215,10 +244,33 @@ static void ko_button_task(void *pvParameters)
 static void menu_btn_event_handler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *btn = lv_event_get_target(e);
 
     if (code == LV_EVENT_CLICKED)
     {
-        ESP_LOGI(TAG, "Opción del menú seleccionada");
+        uint32_t option = lv_obj_get_index(btn);
+        switch (option)
+        {
+        case 0:
+            ws2815_set_color(255, 0, 0);
+            ESP_LOGI(TAG, "WS2815: rojo");
+            break;
+        case 1:
+            ws2815_set_color(0, 255, 0);
+            ESP_LOGI(TAG, "WS2815: verde");
+            break;
+        case 2:
+            ws2815_set_color(0, 0, 255);
+            ESP_LOGI(TAG, "WS2815: azul");
+            break;
+        case 3:
+            ESP_ERROR_CHECK(led_strip_clear(ws2815_strip));
+            ESP_LOGI(TAG, "WS2815: apagado");
+            break;
+        default:
+            ESP_LOGW(TAG, "Opción de menú desconocida: %" PRIu32, option);
+            break;
+        }
     }
 }
 
@@ -241,10 +293,10 @@ static void create_main_menu(void)
     lv_obj_align(list, LV_ALIGN_CENTER, 0, 10);
 
     const char *options[] = {
-        "1. Iluminación WS2815",
-        "2. Ajustes Relé",
-        "3. Control Brillo",
-        "4. Información HW"};
+        "1. WS2815 Rojo",
+        "2. WS2815 Verde",
+        "3. WS2815 Azul",
+        "4. WS2815 Apagar"};
 
     for (int i = 0; i < 4; i++)
     {
@@ -319,6 +371,7 @@ void app_main(void)
 {
     // 1. Inicializar pantalla y LVGL
     init_lcd_display();
+    init_ws2815();
     lvgl_mutex = xSemaphoreCreateMutex();
     assert(lvgl_mutex != NULL);
 
