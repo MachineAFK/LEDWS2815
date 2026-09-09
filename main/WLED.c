@@ -33,7 +33,7 @@
 #define LCD_V_RES 320
 #define LVGL_TICK_PERIOD_MS 2
 #define LVGL_INPUT_PERIOD_MS 5
-#define LVGL_HANDLER_PERIOD_MS 2
+#define LVGL_HANDLER_PERIOD_MS 10
 
 static const char *TAG = "LVGL_APP";
 

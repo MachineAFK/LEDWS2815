@@ -73,8 +73,7 @@ proteger las operaciones realizadas por el bucle principal, el temporizador
 de la pantalla de inicio y la tarea del boton `KO`.
 
 La entrada del encoder se consulta cada 5 ms y el ciclo de LVGL se ejecuta cada
-2 ms para reducir la latencia de navegacion sin perder las transiciones de
-cuadratura.
+10 ms para reducir la latencia de navegacion sin saturar la pantalla SPI.
 
 ## Estado del proyecto
 
