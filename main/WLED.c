@@ -68,6 +68,12 @@ static void ws2815_set_color(uint8_t red, uint8_t green, uint8_t blue)
 
 static void init_ws2815(void)
 {
+    ESP_LOGI(TAG, "Inicializando WS2815 en GPIO11 (%d LEDs)", WS2815_LED_COUNT);
+    gpio_reset_pin(PIN_WS2815_DATA);
+    ESP_ERROR_CHECK(gpio_set_direction(PIN_WS2815_DATA, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_level(PIN_WS2815_DATA, 0));
+    vTaskDelay(pdMS_TO_TICKS(100));
+
     led_strip_config_t strip_config = {
         .strip_gpio_num = PIN_WS2815_DATA,
         .max_leds = WS2815_LED_COUNT,
@@ -79,6 +85,8 @@ static void init_ws2815(void)
 
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &ws2815_strip));
     ESP_ERROR_CHECK(led_strip_clear(ws2815_strip));
+    vTaskDelay(pdMS_TO_TICKS(10));
+    ESP_LOGI(TAG, "WS2815 inicializado y apagado");
 }
 
 // ============================================================================
@@ -369,6 +377,7 @@ static void init_inputs(void)
 // ============================================================================
 void app_main(void)
 {
+    ESP_LOGI(TAG, "Iniciando hardware");
     // 1. Inicializar pantalla y LVGL
     init_lcd_display();
     init_ws2815();
@@ -389,7 +398,7 @@ void app_main(void)
     // 4. Crear la pantalla de inicio
     create_starting_screen();
 
-    ESP_LOGI(TAG, "LVGL e interfaz iniciados correctamente.");
+    ESP_LOGI(TAG, "LVGL, pantalla y WS2815 iniciados correctamente.");
 
     // 5. Bucle principal de ejecución de LVGL
     while (1)

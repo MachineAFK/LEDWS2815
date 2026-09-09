@@ -39,6 +39,9 @@ conversor de nivel logico de 3.3 V a 5 V, una resistencia de 330-470 ohmios en
 la linea DATA y un condensador de 1000 uF entre 5 V y GND cerca de la tira.
 No alimentes los 240 LEDs desde el regulador de la placa.
 
+Durante el arranque el firmware mantiene DATA en bajo durante 100 ms para
+evitar que la tira interprete ruido del reset como datos.
+
 ## Requisitos
 
 - ESP-IDF 6.1 o compatible.
