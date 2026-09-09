@@ -72,6 +72,10 @@ LVGL no es seguro para acceso concurrente. El firmware usa un mutex para
 proteger las operaciones realizadas por el bucle principal, el temporizador
 de la pantalla de inicio y la tarea del boton `KO`.
 
+La entrada del encoder se consulta cada 5 ms y el ciclo de LVGL se ejecuta cada
+2 ms para reducir la latencia de navegacion sin perder las transiciones de
+cuadratura.
+
 ## Estado del proyecto
 
 El menu ya esta operativo como base de la interfaz. Las opciones del menu

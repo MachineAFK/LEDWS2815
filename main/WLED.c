@@ -31,6 +31,9 @@
 
 #define LCD_H_RES 240
 #define LCD_V_RES 320
+#define LVGL_TICK_PERIOD_MS 2
+#define LVGL_INPUT_PERIOD_MS 5
+#define LVGL_HANDLER_PERIOD_MS 2
 
 static const char *TAG = "LVGL_APP";
 
@@ -296,6 +299,8 @@ static void init_inputs(void)
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_ENABLE};
     ESP_ERROR_CHECK(gpio_config(&io_conf));
+    last_encoder_state = (uint8_t)((gpio_get_level(PIN_ENC_A) << 1) |
+                                   gpio_get_level(PIN_ENC_B));
 
     static lv_indev_drv_t indev_drv;
     lv_indev_drv_init(&indev_drv);
@@ -316,13 +321,13 @@ void app_main(void)
     lvgl_mutex = xSemaphoreCreateMutex();
     assert(lvgl_mutex != NULL);
 
-    // 2. Configurar temporizador del Tick de LVGL (cada 2ms)
+    // 2. Configurar temporizador del Tick de LVGL
     const esp_timer_create_args_t lvgl_tick_timer_args = {
         .callback = &lvgl_increase_tick,
         .name = "lvgl_tick"};
     esp_timer_handle_t lvgl_tick_timer = NULL;
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 2000));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, LVGL_TICK_PERIOD_MS * 1000));
 
     // 3. Inicializar hardware de entradas (Encoder + PUSH + KO)
     init_inputs();
@@ -335,7 +340,7 @@ void app_main(void)
     // 5. Bucle principal de ejecución de LVGL
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(LVGL_HANDLER_PERIOD_MS));
         xSemaphoreTake(lvgl_mutex, portMAX_DELAY);
         lv_timer_handler();
         xSemaphoreGive(lvgl_mutex);
