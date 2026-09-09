@@ -307,6 +307,7 @@ static void init_inputs(void)
     indev_drv.type = LV_INDEV_TYPE_ENCODER;
     indev_drv.read_cb = encoder_read_cb;
     indev_encoder = lv_indev_drv_register(&indev_drv);
+    lv_timer_set_period(indev_encoder->driver->read_timer, LVGL_INPUT_PERIOD_MS);
 
     xTaskCreate(ko_button_task, "ko_task", 2048, NULL, 5, NULL);
 }
