@@ -1,7 +1,8 @@
-# WLED - Interfaz de control para ESP32-C3
+# LEDWS2815 - Interfaz de control para ESP32-C3
 
-Firmware para una pantalla TFT con LVGL y un encoder rotatorio. El proyecto
-esta preparado para ESP-IDF y actualmente proporciona:
+Firmware para controlar una cinta LED direccionable WS2815 mediante una
+pantalla TFT de 2 pulgadas, LVGL y un encoder rotatorio EC11. El proyecto esta
+preparado para ESP-IDF y actualmente proporciona:
 
 - Pantalla de arranque con barra de progreso.
 - Menu principal navegable con encoder.
