@@ -27,7 +27,7 @@ El firmware esta configurado para un ESP32-C3 con la siguiente asignacion:
 | Encoder B | 3 |
 | Encoder push | 5 |
 | Boton KO | 1 |
-| WS2815 DATA | 11 |
+| WS2815 DATA | 0 |
 
 La pantalla debe ser compatible con el controlador ST7789 y tener una
 resolucion de 240 x 320. Revisa el cableado y los niveles logicos antes de
@@ -41,6 +41,12 @@ No alimentes los 240 LEDs desde el regulador de la placa.
 
 Durante el arranque el firmware mantiene DATA en bajo durante 100 ms para
 evitar que la tira interprete ruido del reset como datos.
+
+GPIO0 es un pin de strapping del ESP32-C3. Asegurate de que la entrada BOOT no
+sea forzada a nivel bajo por la tira o por el circuito de datos durante el
+reinicio; de lo contrario la placa puede entrar en modo de descarga. Si ocurre,
+desconecta DATA durante la grabacion o usa un buffer/conversor con salida
+triestado durante el arranque.
 
 ## Requisitos
 

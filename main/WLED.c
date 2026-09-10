@@ -30,7 +30,7 @@
 #define PIN_ENC_B GPIO_NUM_3
 #define PIN_PUSH GPIO_NUM_5
 #define PIN_KO GPIO_NUM_1
-#define PIN_WS2815_DATA GPIO_NUM_11
+#define PIN_WS2815_DATA GPIO_NUM_0
 
 #define LCD_H_RES 240
 #define LCD_V_RES 320
@@ -68,7 +68,7 @@ static void ws2815_set_color(uint8_t red, uint8_t green, uint8_t blue)
 
 static void init_ws2815(void)
 {
-    ESP_LOGI(TAG, "Inicializando WS2815 en GPIO11 (%d LEDs)", WS2815_LED_COUNT);
+    ESP_LOGI(TAG, "Inicializando WS2815 en GPIO0 (%d LEDs)", WS2815_LED_COUNT);
     gpio_reset_pin(PIN_WS2815_DATA);
     ESP_ERROR_CHECK(gpio_set_direction(PIN_WS2815_DATA, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_level(PIN_WS2815_DATA, 0));
